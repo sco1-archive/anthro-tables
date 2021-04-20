@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "Anthro Table Parser"
+version = "0.1.0"
+description = "It parses old anthopology tables!"
+authors = ["sco1 <sco1.git@gmail.com>"]
+
+readme = "README.md"
+homepage = "https://github.com/sco1/"
+repository = "https://github.com/sco1/anthro-table-parser"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Typing :: Typed",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+black = {version = "^20.8b1"}
+flake8 = "^3.9"
+flake8-annotations = "^2.6"
+flake8-bugbear = "^21.4"
+flake8-docstrings = "^1.6"
+flake8-fixme = "^1.1"
+flake8-import-order = "^0.18"
+flake8-tidy-imports = "^4.2"
+pep8-naming = "^0.11"
+pre-commit = "^2.12"
+
+[tool.black]
+line-length = 100
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
