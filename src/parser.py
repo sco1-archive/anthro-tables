@@ -1,8 +1,24 @@
 import re
 from collections import deque, namedtuple
+from pathlib import Path
 
 import more_itertools as miter
 import pandas as pd
+from src import converters
+
+OUT_FILEPATH = Path("./converted_anthro_table.xlsx")
+
+CONVERTER_MAP = {
+    "WEIGHT": converters.weight,
+    "AGE": converters.age,
+    "MOS": converters.mos,
+    "RACE": converters.race,
+    "BIRTH DATE": converters.birth_date,
+    "LENGHT OF SERVICE": converters.length_of_service,  # Key typo intentional
+    "RANK": converters.rank,
+    "PLACE OF BIRTH": converters.birthplace,
+    "HANDEDNESS": converters.handedness,
+}
 
 
 FieldSpec = namedtuple("FieldSpec", ["n_repeats", "type", "width"])
@@ -52,6 +68,17 @@ def parse_format_spec(raw_spec: str) -> tuple[list[FieldSpec], int]:
     return field_specs, chunk_size
 
 
+def check_conversions(parsed_df: pd.DataFrame) -> pd.DataFrame:
+    """"""
+    for var_name, converter in CONVERTER_MAP.items():
+        try:
+            parsed_df[var_name] = parsed_df[var_name].apply(converter)
+        except KeyError:
+            continue
+
+    return parsed_df
+
+
 def parse_data(full_text: list[str]) -> pd.DataFrame:
     """"""
     var_names, format_spec, data_start_idx = extract_variable_names(full_text)
@@ -73,3 +100,15 @@ def parse_data(full_text: list[str]) -> pd.DataFrame:
     parsed_df = pd.DataFrame(parsed_rows, columns=var_names).set_index("SUBJECT ID")
 
     return parsed_df
+
+
+def batch_parse(file_list: list[Path], out_filepath: Path = OUT_FILEPATH) -> None:
+    """"""
+    raw_dfs = {}
+    for file_key, filepath in file_list.items():
+        full_text = filepath.read_text().splitlines()
+        raw_dfs[file_key] = check_conversions(parse_data(full_text))
+
+    with pd.ExcelWriter(out_filepath) as writer:
+        for file_id, df in raw_dfs.items():
+            df.to_excel(writer, sheet_name=file_id)
