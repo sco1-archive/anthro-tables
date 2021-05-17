@@ -44,10 +44,12 @@ def extract_variable_names(full_text: list[str]) -> tuple[list[str], str, int]:
     name enumeration concludes, and of the following form:
         ` (I4,19F4.0/20F4.0/20F4.0/9F4.0,F2.0,5F3.0,2F6.0,3F3.0)                         `
 
+    NOTE: The format spec is stripped of leading/trailing whitespace, along with `()`
+
     The (0-indexed) row number of the first data row is also returned.
     """
     var_names = ["SUBJECT ID"]
-    for _idx, line in enumerate(full_text):
+    for _idx, line in enumerate(full_text):  # pragma: no branch
         # Check if we've gotten to the data format spec
         if line.strip().startswith("("):
             break
@@ -85,7 +87,8 @@ def parse_format_spec(raw_spec: str) -> tuple[list[FieldSpec], int]:
     """
     chunk_size = raw_spec.count("/") + 1
 
-    fields = re.split(r"[,/]", raw_spec)
+    # Format spec should be received without whitespace or parentheses, but do it again as a guard
+    fields = re.split(r"[,/]", raw_spec.strip(" ()"))
     spec_pattern = r"(\d*)(\w)(\d+)\.?"
     matches = []
     for field in fields:
