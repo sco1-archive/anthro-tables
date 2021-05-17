@@ -86,9 +86,16 @@ def parse_format_spec(raw_spec: str) -> tuple[list[FieldSpec], int]:
     chunk_size = raw_spec.count("/") + 1
 
     fields = re.split(r"[,/]", raw_spec)
-
     spec_pattern = r"(\d*)(\w)(\d+)\.?"
-    matches = [re.search(spec_pattern, field).groups() for field in fields]
+    matches = []
+    for field in fields:
+        match = re.search(spec_pattern, field)
+
+        if not match:
+            raise ValueError(f"Unknown field specifier: '{field}'")
+
+        matches.append(match.groups())
+
     field_specs = []
     for n_repeats, field_type, field_width in matches:
         field_specs.append(
