@@ -11,6 +11,8 @@ OUT_FILEPATH = Path("./converted_anthro_table.xlsx")
 
 CONVERTER_MAP = {
     "WEIGHT": converters.weight,
+    "WEIGTH-NUDE": converters.weight,  # Key typo intentional
+    "WEIGTH NUDE": converters.weight,  # Key typo intentional
     "AGE": converters.age,
     "MOS": converters.mos,
     "RACE": converters.race,
@@ -170,7 +172,7 @@ def parse_data(full_text: list[str]) -> pd.DataFrame:
 
 def batch_parse(
     file_list: dict[str, Path], out_filepath: Path = OUT_FILEPATH, inplace_decoding: bool = True
-) -> None:
+) -> None:  # pragma: no cover
     """
     Batch parse the provided files into an Excel spreadsheet.
 

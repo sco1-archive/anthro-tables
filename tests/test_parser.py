@@ -1,5 +1,6 @@
 from textwrap import dedent
 
+import pandas as pd
 import pytest
 from src import parser
 from src.parser import FieldSpec
@@ -19,7 +20,7 @@ VARIABLE_PARSING_CASES = (
             4  THIGH-THIGH BREADT   29750   47800   38300  1000   500   1000000   3937008
             5  BACK ARC, BUST       29750   55500   42000  1000  1000   1000000   3937008
             6  STAND TWO-H 38 A1   139750  345500  226500  8000  5000   0453592  22046226
-             (I4,19F4.0/20F4.0/20F4.0/9F4.0,F2.0,5F3.0,2F6.0,3F3.0)
+             (I4,19F4.0)
             """
         ),
         [
@@ -31,7 +32,7 @@ VARIABLE_PARSING_CASES = (
             "BACK ARC, BUST",
             "STAND TWO-H 38 A1",
         ],
-        "I4,19F4.0/20F4.0/20F4.0/9F4.0,F2.0,5F3.0,2F6.0,3F3.0",
+        "I4,19F4.0",
         7,
     ),
 )
@@ -81,6 +82,55 @@ def test_format_spec_parsing(  # noqa: D103
     assert chunk_size == truth_chunk_size
 
 
-def test_empty_format_spec() -> None:  # noqa: D103
+def test_empty_format_spec_raises() -> None:  # noqa: D103
     with pytest.raises(ValueError):
         parser.parse_format_spec("")
+
+
+# Provide a sample data dictionary for DataFrame creation
+# Should have at least one column that will be converted & at least one that will be ignored
+PARSED_DATAFRAME = pd.DataFrame(data={"WEIGHT": [3141], "SNEK": [1337]})
+TRUTH_DATAFRAME = pd.DataFrame(data={"WEIGHT": [314.1], "SNEK": [1337]})
+
+
+def test_inplace_converstion() -> None:
+    """Test the correct application of inplace converters & ignoring of non-convert columns."""
+    converted = parser.do_inplace_conversions(PARSED_DATAFRAME)
+    assert converted.equals(TRUTH_DATAFRAME)
+
+
+# Provide (sample data file, resulting dataframe) test case tuples
+# Data file source should contain variable headers, format spec, and at least one row of data
+DATA_PARSING_CASES = (
+    (
+        dedent(
+            """\
+            1  A
+            2  B
+            (I4,2F4.0)
+            50482313 857
+            """
+        ),
+        pd.DataFrame(data={"SUBJECT ID": [5048], "A": [2313], "B": [857]}).set_index("SUBJECT ID"),
+    ),
+    (
+        dedent(
+            """\
+            1  A
+            2  B
+            (I4,F4.0/F4.0)
+            50482313
+             857
+            """
+        ),
+        pd.DataFrame(data={"SUBJECT ID": [5048], "A": [2313], "B": [857]}).set_index("SUBJECT ID"),
+    ),
+)
+
+
+@pytest.mark.parametrize(("full_src", "truth_df"), DATA_PARSING_CASES)
+def test_data_parsing(full_src: str, truth_df: pd.DataFrame) -> None:  # noqa: D103
+    full_text = full_src.splitlines()
+    parsed_df = parser.parse_data(full_text)
+
+    assert parsed_df.equals(truth_df)
