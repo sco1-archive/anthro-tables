@@ -5,6 +5,7 @@ from pathlib import Path
 
 import more_itertools as miter
 import pandas as pd
+
 from src import converters
 
 OUT_FILEPATH = Path("./converted_anthro_table.xlsx")

@@ -2,9 +2,9 @@ from textwrap import dedent
 
 import pandas as pd
 import pytest
+
 from src import parser
 from src.parser import FieldSpec
-
 
 # Provide (text source, resulting varnames, format spec, data start line) test case tuples
 # Test case source must end with the format spec since this triggers the parser to stop

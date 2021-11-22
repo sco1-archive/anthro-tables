@@ -1,6 +1,7 @@
 import datetime as dt
 
 import more_itertools as miter
+
 from src.code_mappings import BIRTHPLACE, HANDEDNESS, MOS, RACE, RANK
 
 
